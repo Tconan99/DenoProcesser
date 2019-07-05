@@ -4,6 +4,8 @@ import com.google.auto.service.AutoService;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
@@ -69,6 +71,7 @@ public class ConanProcessor extends AbstractProcessor {
                     jcVariableDeclList.forEach(jcVariableDecl -> {
                         messager.printMessage(Diagnostic.Kind.NOTE, jcVariableDecl.getName() + " has been processed");
                         jcClassDecl.defs = jcClassDecl.defs.prepend(makeGetterMethodDecl(jcVariableDecl));
+                        jcClassDecl.defs = jcClassDecl.defs.prepend(makeSetterMethodDecl(jcVariableDecl));
                     });
                     super.visitClassDef(jcClassDecl);
                 }
@@ -79,17 +82,26 @@ public class ConanProcessor extends AbstractProcessor {
         return true;
     }
 
-
     private JCTree.JCMethodDecl makeGetterMethodDecl(JCTree.JCVariableDecl jcVariableDecl) {
-
         ListBuffer<JCTree.JCStatement> statements = new ListBuffer<>();
         statements.append(treeMaker.Return(treeMaker.Select(treeMaker.Ident(names.fromString("this")), jcVariableDecl.getName())));
         JCTree.JCBlock body = treeMaker.Block(0, statements.toList());
-        return treeMaker.MethodDef(treeMaker.Modifiers(Flags.PUBLIC), getNewMethodName(jcVariableDecl.getName()), jcVariableDecl.vartype, List.nil(), List.nil(), List.nil(), body, null);
+        return treeMaker.MethodDef(treeMaker.Modifiers(Flags.PUBLIC), getMethodName(jcVariableDecl.getName(), "get"), jcVariableDecl.vartype, List.nil(), List.nil(), List.nil(), body, null);
     }
 
-    private Name getNewMethodName(Name name) {
+    private JCTree.JCMethodDecl makeSetterMethodDecl(JCTree.JCVariableDecl jcVariableDecl) {
+        JCTree.JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(Flags.PARAMETER), jcVariableDecl.name, jcVariableDecl.vartype, null);
+        List<JCTree.JCVariableDecl> parameters = List.of(param);
+
+        ListBuffer<JCTree.JCStatement> statements = new ListBuffer<>();
+        statements.append(treeMaker.Exec(treeMaker.Assign(treeMaker.Select(treeMaker.Ident(names.fromString("this")), jcVariableDecl.getName()), treeMaker.Ident(jcVariableDecl.getName()))));
+        JCTree.JCBlock body = treeMaker.Block(0, statements.toList());
+
+        return treeMaker.MethodDef(treeMaker.Modifiers(Flags.PUBLIC), getMethodName(jcVariableDecl.getName(), "set"), treeMaker.Type(new Type.JCVoidType()), List.nil(), parameters, List.nil(), body, null);
+    }
+
+    private Name getMethodName(Name name, String pre) {
         String s = name.toString();
-        return names.fromString("get" + s.substring(0, 1).toUpperCase() + s.substring(1, name.length()));
+        return names.fromString(pre + s.substring(0, 1).toUpperCase() + s.substring(1, name.length()));
     }
 }

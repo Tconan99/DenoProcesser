@@ -6,5 +6,5 @@ import lombok.Data;
 @ConanData
 public class Player {
     private String id1 = "uuid";
-    private String name = "123";
+    private String name = "123"; 
 }
