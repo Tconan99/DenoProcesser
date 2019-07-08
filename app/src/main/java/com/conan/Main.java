@@ -3,16 +3,11 @@ package com.conan;
 public class Main {
     public static void main(String[] args) {
         Player player = new Player();
-        // player.getName()
-        // PlayerTest = new PlayerTest();
+
         System.out.println(player.getName());
-
-        // player.setName("11111");
-        player.getName();
-        player.getId1();
-        player.toString();
-
-
+        player.setName("11111");
+        System.out.println(player.getName());
+        System.out.println(player.getId1());
 
         System.out.println("simple:website");
     }
