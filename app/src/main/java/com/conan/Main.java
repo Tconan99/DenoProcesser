@@ -8,7 +8,6 @@ public class Main {
         System.out.println(player.getName());
 
         // player.setName("11111");
-
         player.getName();
         player.getId1();
         player.toString();

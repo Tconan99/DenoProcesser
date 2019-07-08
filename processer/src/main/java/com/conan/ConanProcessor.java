@@ -91,7 +91,10 @@ public class ConanProcessor extends AbstractProcessor {
 
     private JCTree.JCMethodDecl makeSetterMethodDecl(JCTree.JCVariableDecl jcVariableDecl) {
         JCTree.JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(Flags.PARAMETER), jcVariableDecl.name, jcVariableDecl.vartype, null);
+        param.pos = jcVariableDecl.pos;
         List<JCTree.JCVariableDecl> parameters = List.of(param);
+
+        // parameters = List.nil();
 
         ListBuffer<JCTree.JCStatement> statements = new ListBuffer<>();
         statements.append(treeMaker.Exec(treeMaker.Assign(treeMaker.Select(treeMaker.Ident(names.fromString("this")), jcVariableDecl.getName()), treeMaker.Ident(jcVariableDecl.getName()))));
